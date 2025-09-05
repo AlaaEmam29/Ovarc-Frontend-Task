@@ -4,6 +4,8 @@
 - **Vite**: Fast build tool and dev server.
 - **React Router**: Dynamic routing with code splitting.
 - **Tailwind CSS**: Utility-first CSS framework.
+- **Axios**: Promise-based HTTP client for API requests.
+- **MSW (Mock Service Worker)**: API mocking library for development and testing.
 
 
 ## Setup
@@ -11,15 +13,39 @@
    ```bash
    npm install
    ```
-2. **Start the development server**:
+
+2. **Environment Configuration**:
+   - Copy the example environment file:
+     ```bash
+     cp .env.example .env
+     ```
+   - Modify the `.env` file as needed for your environment
+
+3. **Initialize MSW (Mock Service Worker)**:
+   ```bash
+   npm run msw:init
+   ```
+   This will set up the service worker for API mocking during development.
+
+4. **Start the development server**:
    ```bash
    npm run dev
    ```
 
-3. **Build for production**:
+5. **Build for production**:
    ```bash
    npm run build
    ```  
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|--------|
+| `VITE_USE_MOCK_API` | Set to 'true' to use mock API, 'false' for real API | true |
+| `VITE_API_BASE_URL` | Base URL for API requests when not using mock API | /api |
+| `VITE_API_TIMEOUT` | API request timeout in milliseconds | 10000 |
+| `VITE_BASE_PATH` | Base path for the application | / |
+
 
 ## Features
 1. **Shop Page**: 

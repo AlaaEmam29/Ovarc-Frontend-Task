@@ -2,10 +2,14 @@
 import React from 'react';
 import Loading from '../pages/Loading';
 import StoreCard from '../components/Cards/StoreCard';
-import useLibraryData from '../hooks/useLibraryData';
+import { useStores, useInventory } from '../hooks';
 
 const BrowseStores = () => {
-  const { stores, inventory, isLoading } = useLibraryData();
+  const { stores, loading: storesLoading, error: storesError } = useStores();
+  const { inventory, loading: inventoryLoading, error: inventoryError } = useInventory();
+  
+  const isLoading = storesLoading || inventoryLoading;
+  const error = storesError || inventoryError;
 
   // Calculate metrics for each store
   const storesWithMetrics = React.useMemo(() => {
@@ -33,6 +37,10 @@ const BrowseStores = () => {
 
   if (isLoading) {
     return <Loading />;
+  }
+  
+  if (error) {
+    return <div className="py-6 px-4">Error loading data: {error}</div>;
   }
 
   return (

@@ -4,7 +4,7 @@ const StoreCard = ({ name, noOfBooks, averagePrice, id }) => {
     
     const navigate = useNavigate();
   return ( 
-    <div className="bg-white shadow-md rounded-lg p-4 h-[214px] w-112 flex gap-2">
+    <div className="bg-white shadow-md rounded-lg p-4 h-[214px] max-w-112 flex gap-2">
       {/* Store Placeholder (instead of an image) */}
       <div
         className="grid items-center h-full w-32 rounded-lg"

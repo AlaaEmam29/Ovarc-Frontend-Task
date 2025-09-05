@@ -12,7 +12,7 @@ const AuthorCard = ({
         Math.floor(Math.random() * 2) === 0 ? authorImg1 : authorImg2
     );
      return (
-       <div className="bg-white shadow-md rounded-lg p-4 h-[214px] w-112 flex gap-2 ">
+       <div className="bg-white shadow-md rounded-lg p-4 h-[214px] max-w-112 flex gap-2 ">
          <div className=" grid items-center h-full w-32 " 
         >
            <img src={ref.current} alt={name} className="text-center font-light h-full w-full text-gray-800 text-wrap" />

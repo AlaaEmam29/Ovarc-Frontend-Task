@@ -2,14 +2,39 @@
 import React from 'react';
 import Loading from '../pages/Loading';
 import BookCard from '../components/Cards/BookCard';
-import useLibraryData from '../hooks/useLibraryData';
+import { useBooks, useInventory , useAuthors, useStores } from '../hooks';
 
 const BrowseBooks = () => {
-  // Use the custom hook
-  const { booksWithStores, isLoading } = useLibraryData();
+  const { books, loading: booksLoading, error: booksError } = useBooks();
+  const { inventory, loading: inventoryLoading, error: inventoryError } = useInventory();
+  const { authorMap} = useAuthors();
+  const {  storeMap } = useStores();
+
+  const isLoading = booksLoading || inventoryLoading;
+  const error = booksError || inventoryError;
+  
+  const booksWithStores = React.useMemo(() => {
+    return books.map((book) => {
+      const bookInventory = inventory.filter((item) => item.book_id === book.id);
+      const bookStores = bookInventory.map((item) => ({
+        name: storeMap[item.store_id]?.name || 'Unknown Store',
+        price: item.price,
+      }));
+
+      return {
+        title: book.name,
+        author: authorMap[book.author_id]?.name || 'Unknown Author',
+        stores: bookStores,
+      };
+    });
+  }, [books, inventory, authorMap, storeMap]);
 
   if (isLoading) {
     return <Loading />;
+  }
+  
+  if (error) {
+    return <div className="py-6 px-4">Error loading data: {error}</div>;
   }
 
 return (

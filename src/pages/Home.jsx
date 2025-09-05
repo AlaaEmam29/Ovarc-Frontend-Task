@@ -5,18 +5,33 @@ import Loading from '../pages/Loading';
 import StoreCard from '../components/Cards/StoreCard';
 import BookCard from '../components/Cards/BookCard';
 import AuthorCard from '../components/Cards/AuthorCard';
-import useLibraryData from '../hooks/useLibraryData';
+import { useBooks, useAuthors, useStores, useInventory } from '../hooks';
 
 const Home = () => {
-  const {
-    stores,
-    booksWithStores,
-    authors,
-    books,
-    inventory,
-    isLoading,
-  } = useLibraryData();
-
+  const { books, loading: booksLoading, error: booksError ,} = useBooks();
+  const { authors, loading: authorsLoading, error: authorsError ,authorMap} = useAuthors();
+  const { stores, loading: storesLoading, error: storesError , storeMap } = useStores();
+  const { inventory, loading: inventoryLoading, error: inventoryError } = useInventory();
+  
+  const isLoading = booksLoading || authorsLoading || storesLoading || inventoryLoading;
+  const error = booksError || authorsError || storesError || inventoryError;
+  
+    const booksWithStores = React.useMemo(() => {
+      return books.map((book) => {
+        const bookInventory = inventory.filter((item) => item.book_id === book.id);
+        const bookStores = bookInventory.map((item) => ({
+          name: storeMap[item.store_id]?.name || 'Unknown Store',
+          price: item.price,
+        }));
+  
+        return {
+          title: book.name,
+          author: authorMap[book.author_id]?.name || 'Unknown Author',
+          stores: bookStores,
+        };
+      });
+    }, [books, inventory, authorMap, storeMap]);
+  
   const storesWithMetrics = React.useMemo(() => {
     return stores.slice(0, 5).map((store) => { 
       const storeInventory = inventory.filter(
@@ -48,6 +63,10 @@ const Home = () => {
 
   if (isLoading) {
     return <Loading />;
+  }
+  
+  if (error) {
+    return <div className="py-6 px-4">Error loading data: {error}</div>;
   }
 
   return (

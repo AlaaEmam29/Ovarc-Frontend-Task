@@ -25,12 +25,19 @@ const useStores = () => {
     getStores();
   }, [getStores]);
 
+  // Create a map of stores
+  const storeMap = {};
+  stores.forEach(store => {
+    storeMap[store.id] = store;
+  });
+
   return {
     // State
     stores,
     currentStore,
     loading,
     error,
+    storeMap,
     
     // Actions
     getStores,

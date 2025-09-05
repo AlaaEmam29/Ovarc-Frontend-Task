@@ -2,10 +2,14 @@
 import React from 'react';
 import Loading from '../pages/Loading';
 import AuthorCard from '../components/Cards/AuthorCard';
-import useLibraryData from '../hooks/useLibraryData';
+import { useAuthors, useBooks } from '../hooks';
 
 const BrowseAuthors = () => {
-  const { authors, books, isLoading } = useLibraryData();
+  const { authors, loading: authorsLoading, error: authorsError } = useAuthors();
+  const { books, loading: booksLoading, error: booksError } = useBooks();
+  
+  const isLoading = authorsLoading || booksLoading;
+  const error = authorsError || booksError;
 
   // Calculate the number of books per author
   const authorsWithBookCount = React.useMemo(() => {
@@ -20,6 +24,10 @@ const BrowseAuthors = () => {
 
   if (isLoading) {
     return <Loading />;
+  }
+  
+  if (error) {
+    return <div className="py-6 px-4">Error loading data: {error}</div>;
   }
 
   return (

@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Modal from '../components/Modal';
 import Header from '../components/Header';
+import InventoryHeader from '../components/InventoryHeader';
 import BooksTable from '../components/BooksTable';
+import BookDropdown from '../components/BookDropdown';
 import useInventory from '../hooks/useInventory';
 import useBooks from '../hooks/useBooks';
 import useAuthors from '../hooks/useAuthors';
@@ -23,6 +25,7 @@ const StoreInventory = () => {
   const [bookPrice, setBookPrice] = useState('');
   const [editingRowId, setEditingRowId] = useState(null);
   const [editPrice, setEditPrice] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   
   // Get authentication state
   const { isAuthenticated } = useAuth();
@@ -30,7 +33,7 @@ const StoreInventory = () => {
   // Hooks for data
   const { storeInventory, loading, error, getStoreInventory, addItem, updateItem, deleteItem } = useInventory();
   const { books } = useBooks();
-  const { authors } = useAuthors();
+  const { authors , getAuthors , authorMap } = useAuthors();
   const { currentStore, getStoreById } = useStores();
   
   // Set active tab based on view query param
@@ -48,7 +51,10 @@ const StoreInventory = () => {
       getStoreInventory(storeId);
     }
   }, [storeId, getStoreById, getStoreInventory]);
-  
+
+  useEffect(() => {
+    getAuthors();
+  }, [getAuthors]);
 
 
   // Modal controls
@@ -76,6 +82,21 @@ const StoreInventory = () => {
     }
     
     if (!selectedBookId || !bookPrice) {
+      alert('Please select a book and enter a price.');
+      return;
+    }
+
+    // Validate price
+    const priceValue = parseFloat(bookPrice);
+    if (isNaN(priceValue) || priceValue <= 0) {
+      alert('Please enter a valid price greater than 0.');
+      return;
+    }
+
+    // Check if book is already in store inventory
+    const existingItem = storeInventory.find(item => item.book_id === parseInt(selectedBookId));
+    if (existingItem) {
+      alert('This book is already in the store inventory.');
       return;
     }
     
@@ -83,13 +104,16 @@ const StoreInventory = () => {
       const newInventoryItem = {
         store_id: parseInt(storeId, 10),
         book_id: parseInt(selectedBookId, 10),
-        price: parseFloat(bookPrice)
+        price: priceValue
       };
       
       await addItem(newInventoryItem);
+      // Refresh inventory after adding
+      getStoreInventory(storeId);
       closeModal();
     } catch (err) {
-      // Error is handled by the reducer
+      console.error('Error adding item:', err);
+      alert('Failed to add book to inventory. Please try again.');
     }
   };
   
@@ -100,10 +124,17 @@ const StoreInventory = () => {
       return;
     }
     
+    if (!confirm('Are you sure you want to remove this book from the store inventory?')) {
+      return;
+    }
+    
     try {
       await deleteItem(inventoryItemId, storeId);
+      // Refresh inventory after deletion
+      getStoreInventory(storeId);
     } catch (err) {
-      // Error is handled by the reducer
+      console.error('Error deleting item:', err);
+      alert('Failed to delete item. Please try again.');
     }
   };
   
@@ -118,8 +149,11 @@ const StoreInventory = () => {
       await updateItem(inventoryItemId, { price: parseFloat(newPrice) }, storeId);
       setEditingRowId(null);
       setEditPrice('');
+      // Refresh inventory after update
+      getStoreInventory(storeId);
     } catch (err) {
-      // Error is handled by the reducer
+      console.error('Error updating price:', err);
+      alert('Failed to update price. Please try again.');
     }
   };
   
@@ -128,6 +162,23 @@ const StoreInventory = () => {
     setEditingRowId(null);
     setEditPrice('');
   };
+
+  // Filter inventory based on search term
+  const filteredInventory = storeInventory.filter(item => {
+    if (!searchTerm.trim()) return true;
+    
+    const book = books.find(b => b.id === item.book_id);
+    const author = authors.find(a => a.id === book?.author_id);
+    const authorName = author ? `${author.first_name} ${author.last_name}` : '';
+    
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      book?.name?.toLowerCase().includes(searchLower) ||
+      authorName.toLowerCase().includes(searchLower) ||
+      book?.id?.toString().includes(searchLower) ||
+      item.price?.toString().includes(searchLower)
+    );
+  });
 
   return (
     <div className="py-6">
@@ -152,10 +203,12 @@ const StoreInventory = () => {
         </button>
       </div>
 
-      <Header 
-        addNew={openModal} 
+      <InventoryHeader 
         title={`${currentStore?.name || 'Store'} Inventory`} 
-        buttonTitle="Add to inventory" 
+        buttonTitle="Add to inventory"
+        onAddNew={openModal}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
       />
 
       {loading ? (
@@ -163,10 +216,10 @@ const StoreInventory = () => {
       ) : error ? (
         <p className="text-red-600">Error: {error}</p>
       ) : activeTab === 'books' ? (
-        storeInventory.length > 0 ? (
+        filteredInventory.length > 0 ? (
           <div className="overflow-x-auto">
             <BooksTable
-              books={storeInventory.map(item => {
+              books={filteredInventory.map(item => {
                 const book = books.find(b => b.id === item.book_id) || {};
                 return {
                   ...book,
@@ -186,7 +239,7 @@ const StoreInventory = () => {
                 }
               }}
               deleteBook={(bookId, bookName) => {
-                const inventoryItem = storeInventory.find(item => item.book_id === bookId);
+                const inventoryItem = filteredInventory.find(item => item.book_id === bookId);
                 if (inventoryItem) {
                   handleDeleteFromInventory(inventoryItem.id);
                 }
@@ -194,6 +247,8 @@ const StoreInventory = () => {
               columnsConfig={['id', 'name', 'pages', 'author', 'price', 'actions']}
             />
           </div>
+        ) : searchTerm ? (
+          <p className="text-gray-600">No books found matching "{searchTerm}".</p>
         ) : (
           <p className="text-gray-600">No books found in this store.</p>
         )
@@ -202,35 +257,20 @@ const StoreInventory = () => {
       )}
 
       <Modal
-        title="Add/Edit Book in Store"
+        title="Add Book to Store Inventory"
         save={handleAddToInventory}
         cancel={closeModal}
         show={showModal}
         setShow={setShowModal}
         disabled={!selectedBookId || !bookPrice}
       >
-        <div className="flex flex-col gap-4 w-full">
-          <div>
-            <label htmlFor="book_select" className="block text-gray-700 font-medium mb-1">
-              Select Book
-            </label>
-            <select
-              id="book_select"
-              className="border border-gray-300 rounded p-2 w-full"
-              value={selectedBookId}
-              onChange={(e) => setSelectedBookId(e.target.value)}
-            >
-              <option value="">-- Select a book --</option>
-              {books
-                .filter(book => !storeInventory.some(item => item.book_id === book.id))
-                .map(book => (
-                  <option key={book.id} value={book.id}>
-                    {book.name}
-                  </option>
-                ))
-              }
-            </select>
-          </div>
+        <div className="flex flex-col gap-4 w-full">          <BookDropdown
+            books={books}
+            selectedBookId={selectedBookId}
+            onBookSelect={setSelectedBookId}
+            excludeBookIds={storeInventory.map(item => item.book_id)}
+            maxInitialItems={7}
+          />
 
           <div>
             <label htmlFor="price" className="block text-gray-700 font-medium mb-1">
@@ -238,7 +278,9 @@ const StoreInventory = () => {
             </label>
             <input
               id="price"
-              type="text"
+              type="number"
+              step="0.01"
+              min="0"
               className="border border-gray-300 rounded p-2 w-full"
               placeholder="Enter Price (e.g., 29.99)"
               value={bookPrice}
@@ -253,3 +295,4 @@ const StoreInventory = () => {
 };
 
 export default StoreInventory;
+

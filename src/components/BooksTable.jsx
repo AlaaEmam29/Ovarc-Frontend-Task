@@ -15,20 +15,16 @@ const BooksTable = ({
   columnsConfig = ['id', 'name', 'pages', 'author', 'actions'], // Default columns
 }) => {
   // Create a lookup map for authors
-  const authorMap = useMemo(() => {
-    return authors.reduce((map, author) => {
-      map[author.id] = `${author.first_name} ${author.last_name}`;
-      return map;
-    }, {});
-  }, [authors]);
-
   // Enrich books with author names
   const enrichedBooks = useMemo(() => {
-    return books.map((book) => ({
-      ...book,
-      author_name: authorMap[book.author_id] || 'Unknown Author',
-    }));
-  }, [books, authorMap]);
+    return books.map((book) => {
+      const author = authors.find(a => a.id === book.author_id);
+      return {
+        ...book,
+        author_name: author ? `${author.first_name} ${author.last_name}` : 'Unknown Author',
+      };
+    });
+  }, [books, authors]);
 
   // Define all possible columns
   const allColumns = useMemo(
@@ -84,7 +80,7 @@ const BooksTable = ({
   // Handle editing price
   const handleEdit = (book) => {
     setEditingRowId(book.id);
-    setEditName(book.price.toString());
+    setEditName(book.price ? book.price.toString() : '');
   };
 
   // Save edited price
@@ -92,7 +88,7 @@ const BooksTable = ({
     // Validate price is a valid number
     const priceValue = parseFloat(editName);
     if (isNaN(priceValue) || priceValue <= 0) {
-      alert('Please enter a valid price');
+      alert('Please enter a valid price greater than 0');
       return;
     }
     

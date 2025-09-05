@@ -1,7 +1,7 @@
 // src/mocks/handlers.js
 import { http, HttpResponse } from "msw";
 
-import authors from "./data/books.json";
+import authors from "./data/authors.json";
 import books from "./data/books.json";
 import inventory from "./data/inventory.json";
 import stores from "./data/stores.json";

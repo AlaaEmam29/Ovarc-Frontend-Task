@@ -54,8 +54,8 @@ const useInventory = () => {
 
   // Delete an inventory item
   const deleteItem = useCallback(
-    (id) => {
-      return dispatch(deleteInventoryItem(id));
+    (id, storeId) => {
+      return dispatch(deleteInventoryItem(id, storeId));
     },
     [dispatch]
   );

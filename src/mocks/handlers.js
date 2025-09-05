@@ -5,6 +5,7 @@ import authors from "./data/authors.json";
 import books from "./data/books.json";
 import inventory from "./data/inventory.json";
 import stores from "./data/stores.json";
+import users from "./data/users.json";
 
 // Define handlers for API endpoints
 export const handlers = [
@@ -31,6 +32,19 @@ export const handlers = [
     // In a real app, we would save this to the database
     // For mock purposes, we'll just return the item with an ID
     return HttpResponse.json({ ...newItem, id: Date.now() }, { status: 201 });
+  }),
+  
+  http.put("/api/inventory/:id", async ({ params, request }) => {
+    const { id } = params;
+    const updatedItem = await request.json();
+    
+    // In a real app, we would update the database
+    return HttpResponse.json({ ...updatedItem, id: parseInt(id) });
+  }),
+  
+  http.delete("/api/inventory/:id", ({ params }) => {
+    // In a real app, we would delete from the database
+    return new HttpResponse(null, { status: 204 });
   }),
   http.get("/api/stores", () => HttpResponse.json(stores)),
   http.get("/api/inventory/:id", ({ params }) => {
@@ -96,5 +110,67 @@ export const handlers = [
     }
 
     return HttpResponse.json(author);
+  }),
+
+  // Authentication endpoints
+  http.post("/api/auth/login", async ({ request }) => {
+    const { email, password } = await request.json();
+    
+    // Find user by email and password
+    const user = users.find(u => u.email === email && u.password === password);
+    
+    if (!user) {
+      return HttpResponse.json(
+        { message: "Invalid email or password" },
+        { status: 401 }
+      );
+    }
+    
+    // Return user data without password and with token
+    const { password: _, ...userWithoutPassword } = user;
+    return HttpResponse.json({
+      user: userWithoutPassword,
+      token: `mock-jwt-token-${user.id}-${Date.now()}`
+    });
+  }),
+
+  http.post("/api/auth/logout", () => {
+    return HttpResponse.json({ message: "Logged out successfully" });
+  }),
+
+  // Get current user (for token validation)
+  http.get("/api/auth/me", ({ request }) => {
+    const authHeader = request.headers.get('Authorization');
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return HttpResponse.json(
+        { message: "No token provided" },
+        { status: 401 }
+      );
+    }
+    
+    const token = authHeader.substring(7);
+    
+    // Simple token validation (extract user ID from mock token)
+    const tokenMatch = token.match(/mock-jwt-token-(\d+)-/);
+    if (!tokenMatch) {
+      return HttpResponse.json(
+        { message: "Invalid token" },
+        { status: 401 }
+      );
+    }
+    
+    const userId = parseInt(tokenMatch[1]);
+    const user = users.find(u => u.id === userId);
+    
+    if (!user) {
+      return HttpResponse.json(
+        { message: "User not found" },
+        { status: 404 }
+      );
+    }
+    
+    const { password: _, ...userWithoutPassword } = user;
+    return HttpResponse.json({ user: userWithoutPassword });
   }),
 ];

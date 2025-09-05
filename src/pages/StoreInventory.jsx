@@ -108,8 +108,6 @@ const StoreInventory = () => {
       };
       
       await addItem(newInventoryItem);
-      // Refresh inventory after adding
-      getStoreInventory(storeId);
       closeModal();
     } catch (err) {
       console.error('Error adding item:', err);
@@ -130,8 +128,6 @@ const StoreInventory = () => {
     
     try {
       await deleteItem(inventoryItemId, storeId);
-      // Refresh inventory after deletion
-      getStoreInventory(storeId);
     } catch (err) {
       console.error('Error deleting item:', err);
       alert('Failed to delete item. Please try again.');
@@ -139,18 +135,19 @@ const StoreInventory = () => {
   };
   
   // Handle updating book price
-  const handleUpdatePrice = async (inventoryItemId, newPrice) => {
+  const handleUpdatePrice = async (inventoryItem, newPrice) => {
     if (!isAuthenticated) {
       setShowLoginModal(true);
       return;
     }
     
     try {
-      await updateItem(inventoryItemId, { price: parseFloat(newPrice) }, storeId);
+      await updateItem(inventoryItem.id, { 
+        ...inventoryItem,
+        price: parseFloat(newPrice)
+      }, storeId);
       setEditingRowId(null);
       setEditPrice('');
-      // Refresh inventory after update
-      getStoreInventory(storeId);
     } catch (err) {
       console.error('Error updating price:', err);
       alert('Failed to update price. Please try again.');
@@ -235,7 +232,11 @@ const StoreInventory = () => {
               setBooks={(updatedBooks) => {
                 const updatedBook = updatedBooks.find(b => b.id === editingRowId);
                 if (updatedBook) {
-                  handleUpdatePrice(updatedBook.inventory_id, editPrice);
+                  // Find the inventory item by book ID since editingRowId is the book ID
+                  const inventoryItem = filteredInventory.find(item => item.book_id === editingRowId);
+                  if (inventoryItem) {
+                    handleUpdatePrice(inventoryItem, editPrice);
+                  }
                 }
               }}
               deleteBook={(bookId, bookName) => {

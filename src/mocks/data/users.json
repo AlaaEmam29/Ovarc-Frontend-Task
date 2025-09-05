@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "email": "admin@bookstore.com",
+    "password": "admin123",
+    "name": "Admin User",
+    "role": "admin",
+    "avatar": "https://ui-avatars.com/api/?name=Admin+User&background=4F46E5&color=FFFFFF&size=40"
+  },
+  {
+    "id": 2,
+    "email": "manager@bookstore.com",
+    "password": "manager123",
+    "name": "Store Manager",
+    "role": "manager",
+    "avatar": "https://ui-avatars.com/api/?name=Store+Manager&background=059669&color=FFFFFF&size=40"
+  },
+  {
+    "id": 3,
+    "email": "user@bookstore.com",
+    "password": "user123",
+    "name": "Regular User",
+    "role": "user",
+    "avatar": "https://ui-avatars.com/api/?name=Regular+User&background=DC2626&color=FFFFFF&size=40"
+  }
+]

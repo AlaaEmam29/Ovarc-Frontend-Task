@@ -124,11 +124,7 @@ export const addInventoryItem = (inventoryData) => async (dispatch) => {
     
     const response = await inventoryApi.create(inventoryData, signal);
     
-    // After successful creation, refresh the store inventory if store_id is present
-    if (inventoryData.store_id) {
-      dispatch(fetchStoreInventory(inventoryData.store_id));
-    }
-    
+
     dispatch({
       type: ADD_INVENTORY_ITEM_SUCCESS,
       payload: response.data
@@ -156,11 +152,6 @@ export const updateInventoryItem = (id, inventoryData, storeId) => async (dispat
     
     const response = await inventoryApi.update(id, inventoryData, signal, storeId);
     
-    // After successful update, refresh the store inventory if storeId is present
-    if (storeId) {
-      dispatch(fetchStoreInventory(storeId));
-    }
-    
     dispatch({
       type: UPDATE_INVENTORY_ITEM_SUCCESS,
       payload: response.data
@@ -185,13 +176,7 @@ export const deleteInventoryItem = (id, storeId) => async (dispatch) => {
     const signal = abortPreviousRequest('deleteInventoryItem');
     
     dispatch({ type: DELETE_INVENTORY_ITEM_REQUEST });
-    
     await inventoryApi.delete(id, signal, storeId);
-    
-    // After successful deletion, refresh the store inventory if storeId is present
-    if (storeId) {
-      dispatch(fetchStoreInventory(storeId));
-    }
     
     dispatch({
       type: DELETE_INVENTORY_ITEM_SUCCESS,

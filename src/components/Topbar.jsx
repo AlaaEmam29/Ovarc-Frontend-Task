@@ -39,7 +39,6 @@ const Topbar = () => {
       subtitle: 'Shop > Authors',
     },
   }
-
   return (
     <div className='h-24 border-b border-b-secondary-text flex justify-between items-center'>
       <div className='flex flex-col justify-start items-start '>
@@ -50,7 +49,11 @@ const Topbar = () => {
       <div className='flex-1 flex justify-end items-center'>
         {isAuthenticated ? (
           <div className='flex items-center'>
-            <img src={usrImg} alt="profile" className='ml-4 rounded' />
+            <img
+              src={currentUser?.avatar}
+              alt="profile"
+              className='ml-4 rounded'
+            />
             <p className='text-secondary-text font-light ml-1 h-full'>{currentUser?.name}</p>
             <button 
               onClick={logout}

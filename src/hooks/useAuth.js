@@ -13,8 +13,8 @@ const useAuth = () => {
   }, [dispatch]);
 
   // Login function
-  const handleLogin = useCallback((username, password) => {
-    return dispatch(login(username, password));
+  const handleLogin = useCallback((email, password) => {
+    return dispatch(login(email, password));
   }, [dispatch]);
 
   // Logout function

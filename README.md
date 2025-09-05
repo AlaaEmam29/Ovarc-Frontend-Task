@@ -115,12 +115,8 @@ inventory. The books should be viewable either in a list view or grouped by the 
 src/
   ├── components/       # Reusable UI components
   ├── hooks/            # Custom React hooks
-  ├── network/          # API services and axios configuration
   ├── pages/            # Page components
   ├── services/         # Mock server implementation
-  ├── store/            # Redux state management
-  ├── types/            # TypeScript type definitions
-  ├── utils/            # Utility functions
   └── App.jsx           # Main application component
 ```
 

@@ -5,17 +5,17 @@ import store from './store'
 import './index.css'
 import App from './App.jsx'
 
-// // Initialize MSW in development mode
-// async function enableMocking() {
-//   if (import.meta.env.MODE !== 'production') {
-//     const { worker } = await import('./mocks');
-//     return worker.start({ onUnhandledRequest: 'bypass' });
-//   }
-//   return Promise.resolve();
-// }
+// Initialize MSW in development mode
+async function enableMocking() {
+  if (import.meta.env.MODE !== 'production') {
+    const { worker } = await import('./mocks');
+    return worker.start({ onUnhandledRequest: 'bypass' });
+  }
+  return Promise.resolve();
+}
 
-// // Start the MSW worker and then render the app
-// enableMocking().then(() => {
+// Start the MSW worker and then render the app
+enableMocking().then(() => {
   createRoot(document.getElementById('root')).render(
     <StrictMode>
       <Provider store={store}>
@@ -23,4 +23,4 @@ import App from './App.jsx'
       </Provider>
     </StrictMode>,
   );
-// });
+});

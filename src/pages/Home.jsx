@@ -43,6 +43,7 @@ const Home = () => {
 
       return {
         name: store.name,
+        id:store.id,
         noOfBooks,
         averagePrice,
       };

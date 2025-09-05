@@ -9,6 +9,7 @@ const Modal = (
         title,
         save,
         cancel,
+        disabled,
         children
     }
 ) => {
@@ -30,7 +31,8 @@ const Modal = (
                     </button>
                     <button
                         onClick={save}
-                        className="bg-main text-white px-3 py-1.5 rounded"
+                        disabled={disabled}
+                        className="bg-main text-white px-3 py-1.5 rounded disabled:bg-gray-400"
                     >
                         Submit
                     </button>

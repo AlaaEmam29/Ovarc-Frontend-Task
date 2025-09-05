@@ -73,26 +73,44 @@ const inventoryApi = {
    * @returns {Promise} Promise with created inventory item data
    */
   create: (inventoryData) => {
-    return axiosInstance.post(INVENTORY_ENDPOINT, inventoryData);
+    // If store_id is provided, use the store-specific endpoint
+    if (inventoryData.store_id) {
+      return axiosInstance.post(`${STORES_ENDPOINT}/${inventoryData.store_id}/inventory`, inventoryData);
+    } else {
+      return axiosInstance.post(INVENTORY_ENDPOINT, inventoryData);
+    }
   },
 
   /**
    * Update an existing inventory item
    * @param {number} id - Inventory item ID
    * @param {Object} inventoryData - Updated inventory item data
+   * @param {number} storeId - Optional store ID for store-specific operations
    * @returns {Promise} Promise with updated inventory item data
    */
-  update: (id, inventoryData) => {
-    return axiosInstance.put(`${INVENTORY_ENDPOINT}/${id}`, inventoryData);
+  update: (id, inventoryData, signal, storeId) => {
+    // Use store-specific endpoint if storeId is provided
+    if (storeId) {
+      return axiosInstance.put(`${STORES_ENDPOINT}/${storeId}/inventory/${id}`, inventoryData, { signal });
+    } else {
+      return axiosInstance.put(`${INVENTORY_ENDPOINT}/${id}`, inventoryData, { signal });
+    }
   },
 
   /**
    * Delete an inventory item
    * @param {number} id - Inventory item ID
+   * @param {AbortSignal} signal - Optional AbortSignal for cancellation
+   * @param {number} storeId - Optional store ID for store-specific operations
    * @returns {Promise} Promise with deletion status
    */
-  delete: (id) => {
-    return axiosInstance.delete(`${INVENTORY_ENDPOINT}/${id}`);
+  delete: (id, signal, storeId) => {
+    // Use store-specific endpoint if storeId is provided
+    if (storeId) {
+      return axiosInstance.delete(`${STORES_ENDPOINT}/${storeId}/inventory/${id}`, { signal });
+    } else {
+      return axiosInstance.delete(`${INVENTORY_ENDPOINT}/${id}`, { signal });
+    }
   }
 };
 

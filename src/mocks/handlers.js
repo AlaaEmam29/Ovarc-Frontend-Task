@@ -24,6 +24,14 @@ export const handlers = [
     return HttpResponse.json(book);
   }),
   http.get("/api/inventory", () => HttpResponse.json(inventory)),
+  
+  http.post("/api/inventory", async ({ request }) => {
+    const newItem = await request.json();
+    
+    // In a real app, we would save this to the database
+    // For mock purposes, we'll just return the item with an ID
+    return HttpResponse.json({ ...newItem, id: Date.now() }, { status: 201 });
+  }),
   http.get("/api/stores", () => HttpResponse.json(stores)),
   http.get("/api/inventory/:id", ({ params }) => {
     const { id } = params;
@@ -37,13 +45,42 @@ export const handlers = [
   }),
   http.get("/api/stores/:id", ({ params }) => {
     const { id } = params;
-    const stores = stores.find((stores) => stores.id === id);
+    const store = stores.find((store) => store.id === parseInt(id));
 
-    if (!stores) {
+    if (!store) {
       return new HttpResponse(null, { status: 404 });
     }
 
-    return HttpResponse.json(stores);
+    return HttpResponse.json(store);
+  }),
+  
+  // Store inventory endpoints
+  http.get("/api/stores/:storeId/inventory", ({ params }) => {
+    const { storeId } = params;
+    const storeInventory = inventory.filter((item) => item.store_id === parseInt(storeId));
+    return HttpResponse.json(storeInventory);
+  }),
+  
+  http.post("/api/stores/:storeId/inventory", async ({ params, request }) => {
+    const { storeId } = params;
+    const newItem = await request.json();
+    
+    // In a real app, we would save this to the database
+    // For mock purposes, we'll just return the item with an ID
+    return HttpResponse.json({ ...newItem, id: Date.now(), store_id: parseInt(storeId) }, { status: 201 });
+  }),
+  
+  http.put("/api/stores/:storeId/inventory/:id", async ({ params, request }) => {
+    const { storeId, id } = params;
+    const updatedItem = await request.json();
+    
+    // In a real app, we would update the database
+    return HttpResponse.json({ ...updatedItem, id: parseInt(id), store_id: parseInt(storeId) });
+  }),
+  
+  http.delete("/api/stores/:storeId/inventory/:id", ({ params }) => {
+    // In a real app, we would delete from the database
+    return new HttpResponse(null, { status: 204 });
   }),
   // Authors endpoints
   http.get("/api/authors", () => {

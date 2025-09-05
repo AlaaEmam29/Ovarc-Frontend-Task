@@ -34,9 +34,12 @@ const BooksTable = ({
   const allColumns = useMemo(
     () => ({
       id: { header: 'Book Id', accessorKey: 'id' },
-      name: {
-        header: 'Name',
-        accessorKey: 'name',
+      name: { header: 'Name', accessorKey: 'name' },
+      pages: { header: 'Pages', accessorKey: 'page_count' },
+      author: { header: 'Author', accessorKey: 'author_name' },
+      price: { 
+        header: 'Price', 
+        accessorKey: 'price',
         cell: ({ row }) =>
           editingRowId === row.original.id ? (
             <input
@@ -51,12 +54,9 @@ const BooksTable = ({
               autoFocus
             />
           ) : (
-            row.original.name
+            `$${parseFloat(row.original.price).toFixed(2)}`
           ),
       },
-      pages: { header: 'Pages', accessorKey: 'page_count' },
-      author: { header: 'Author', accessorKey: 'author_name' },
-      price: { header: 'Price', accessorKey: 'price' },
       actions: {
         header: 'Actions',
         id: 'actions',
@@ -73,7 +73,7 @@ const BooksTable = ({
         ),
       },
     }),
-    [editingRowId, editName]
+    [editingRowId, editName, deleteBook]
   );
 
   // Select columns based on columnsConfig
@@ -81,17 +81,24 @@ const BooksTable = ({
     return columnsConfig.map((colKey) => allColumns[colKey]).filter(Boolean);
   }, [columnsConfig, allColumns]);
 
-  // Handle editing
+  // Handle editing price
   const handleEdit = (book) => {
     setEditingRowId(book.id);
-    setEditName(book.name);
+    setEditName(book.price.toString());
   };
 
-  // Save edited name
+  // Save edited price
   const handleSave = (id) => {
+    // Validate price is a valid number
+    const priceValue = parseFloat(editName);
+    if (isNaN(priceValue) || priceValue <= 0) {
+      alert('Please enter a valid price');
+      return;
+    }
+    
     setBooks(
       books.map((book) =>
-        book.id === id ? { ...book, name: editName } : book
+        book.id === id ? { ...book, price: priceValue } : book
       )
     );
     setEditingRowId(null);

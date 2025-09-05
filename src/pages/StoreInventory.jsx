@@ -8,6 +8,8 @@ import useInventory from '../hooks/useInventory';
 import useBooks from '../hooks/useBooks';
 import useAuthors from '../hooks/useAuthors';
 import useStores from '../hooks/useStores';
+import { useAuth } from '../hooks';
+import LoginModal from '../components/LoginModal';
 
 const StoreInventory = () => {
   // Get store ID from URL params
@@ -16,10 +18,14 @@ const StoreInventory = () => {
   // State for UI
   const [activeTab, setActiveTab] = useState('books');
   const [showModal, setShowModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState('');
   const [bookPrice, setBookPrice] = useState('');
   const [editingRowId, setEditingRowId] = useState(null);
   const [editPrice, setEditPrice] = useState('');
+  
+  // Get authentication state
+  const { isAuthenticated } = useAuth();
 
   // Hooks for data
   const { storeInventory, loading, error, getStoreInventory, addItem, updateItem, deleteItem } = useInventory();
@@ -47,6 +53,10 @@ const StoreInventory = () => {
 
   // Modal controls
   const openModal = () => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
     setSelectedBookId('');
     setBookPrice('');
     setShowModal(true);
@@ -60,6 +70,11 @@ const StoreInventory = () => {
   
   // Handle adding a book to inventory
   const handleAddToInventory = async () => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+    
     if (!selectedBookId || !bookPrice) {
       return;
     }
@@ -80,6 +95,11 @@ const StoreInventory = () => {
   
   // Handle deleting a book from inventory
   const handleDeleteFromInventory = async (inventoryItemId) => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+    
     try {
       await deleteItem(inventoryItemId, storeId);
     } catch (err) {
@@ -89,6 +109,11 @@ const StoreInventory = () => {
   
   // Handle updating book price
   const handleUpdatePrice = async (inventoryItemId, newPrice) => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+    
     try {
       await updateItem(inventoryItemId, { price: parseFloat(newPrice) }, storeId);
       setEditingRowId(null);
@@ -106,6 +131,12 @@ const StoreInventory = () => {
 
   return (
     <div className="py-6">
+      {/* Login Modal */}
+      <LoginModal 
+        isOpen={showLoginModal} 
+        onClose={() => setShowLoginModal(false)} 
+      />
+      
       <div className="flex mb-4 w-full justify-center items-center">
         <button
           onClick={() => setActiveTab('books')}

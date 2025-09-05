@@ -1,9 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import usrImg from '../assets/usr.png'
+import { useAuth } from '../hooks'
+import LoginModal from './LoginModal'
 const Topbar = () => {
   const location = useLocation()
   const path = location.pathname;
+  const { currentUser, isAuthenticated, logout } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const title = {
     '/': {
       title: 'Shop',
@@ -44,10 +48,31 @@ const Topbar = () => {
 
       </div>
       <div className='flex-1 flex justify-end items-center'>
-        <img src={usrImg} alt="profile" className='ml-4 rounded' />
-        <p className='text-secondary-text font-light ml-1 h-full'>User Name</p>
-
-    </div>
+        {isAuthenticated ? (
+          <div className='flex items-center'>
+            <img src={usrImg} alt="profile" className='ml-4 rounded' />
+            <p className='text-secondary-text font-light ml-1 h-full'>{currentUser?.name}</p>
+            <button 
+              onClick={logout}
+              className='ml-4 bg-main text-white rounded px-3 py-1 text-sm'
+            >
+              Sign Out
+            </button>
+          </div>
+        ) : (
+          <button 
+            onClick={() => setShowLoginModal(true)}
+            className='bg-main text-white rounded px-4 py-2'
+          >
+            Sign In
+          </button>
+        )}
+      </div>
+      
+      <LoginModal 
+        isOpen={showLoginModal} 
+        onClose={() => setShowLoginModal(false)} 
+      />
     </div>
   )
 }
